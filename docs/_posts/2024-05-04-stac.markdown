@@ -1,0 +1,23 @@
+---
+layout: post
+title:  "Small note about stac instruction"
+date:   2024-05-04 12:02:16 +0300
+categories: linux trick smap
+---
+
+Fact of the day:
+- stac can temporary force neglecting the SMAP (according to https://www.felixcloutier.com/x86/stac)
+- stac is privileged instruction that's only allowed to be executed in Ring-0. So everything is ok?
+
+Nah, we can can emulate stac behaviour using the following sequence being in CPL>0 (lol):
+
+{% highlight asm %}
+pushfq;
+popq rax;
+or rax, 0x40000;
+pushq rax;
+popfq;
+{% endhighlight %}
+
+
+And have this weird security mitigation kinda ignored (assuming that the corresponding bit, X86_EFLAGS_AC, can be set in MSR_FMASK). Before catching SIGBUS of course.
